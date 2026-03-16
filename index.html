@@ -6,7 +6,61 @@
 <title>FortiFocus – Smart Study Tracker</title>
 <link rel="stylesheet" href="style.css">
 <style>
-
+.admin-entry{
+  margin-top:1rem;
+  text-align:center;
+}
+.admin-link-btn{
+  border:none;
+  background:transparent;
+  color:var(--ink-3,#6b7280);
+  font:inherit;
+  font-size:.9rem;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:.2rem;
+}
+.admin-link-btn:hover{
+  color:var(--ink,#111827);
+}
+.admin-auth-screen{
+  position:fixed;
+  inset:0;
+  display:none;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:1.5rem;
+  background:rgba(15,23,42,.45);
+  backdrop-filter:blur(8px);
+  z-index:30;
+}
+.admin-auth-screen.active{
+  display:flex;
+}
+.admin-auth-card{
+  width:min(100%,420px);
+  background:var(--paper,#fff);
+  border:1px solid var(--border,#d1d5db);
+  border-radius:24px;
+  padding:2rem;
+  box-shadow:0 24px 80px rgba(15,23,42,.18);
+}
+.admin-auth-head{
+  margin-bottom:1.5rem;
+}
+.admin-auth-head p{
+  margin-top:.4rem;
+  color:var(--ink-3,#6b7280);
+}
+.admin-auth-actions{
+  display:flex;
+  gap:.75rem;
+  margin-top:1.25rem;
+}
+.admin-auth-actions .btn{
+  flex:1;
+}
 </style>
 
 </head>
@@ -26,7 +80,6 @@
       <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
       <div class="auth-tab" onclick="switchTab('register')">Register</div>
     </div>
-    <!-- Login -->
     <div id="loginForm" class="auth-form active">
       <div class="form-group">
         <label>Username</label>
@@ -37,9 +90,8 @@
         <input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')handleLogin()">
       </div>
       <div class="error-msg" id="loginError"></div>
-      <button class="btn btn-primary" onclick="handleLogin()">Sign In →</button>
+      <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
     </div>
-    <!-- Register -->
     <div id="registerForm" class="auth-form">
       <div class="form-group">
         <label>Username</label>
@@ -58,12 +110,36 @@
         <input type="password" id="regPass2" placeholder="Repeat password">
       </div>
       <div class="error-msg" id="registerError"></div>
-      <button class="btn btn-primary" onclick="handleRegister()">Create Account →</button>
+      <button class="btn btn-primary" onclick="handleRegister()">Create Account</button>
+    </div>
+    <div class="admin-entry">
+      <button class="admin-link-btn" onclick="openAdminAuth()">Admin Access</button>
     </div>
   </div>
 </div>
 
-<!-- ── APP ── -->
+<div id="adminAuthScreen" class="admin-auth-screen">
+  <div class="admin-auth-card">
+    <div class="admin-auth-head">
+      <h2>Admin Authentication</h2>
+      <p>Sign in as administrator to open the dashboard.</p>
+    </div>
+    <div class="form-group">
+      <label>Admin Username</label>
+      <input type="text" id="adminUser" placeholder="admin">
+    </div>
+    <div class="form-group">
+      <label>Admin Password</label>
+      <input type="password" id="adminPass" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')handleAdminLogin()">
+    </div>
+    <div class="error-msg" id="adminError"></div>
+    <div class="admin-auth-actions">
+      <button class="btn btn-ghost" onclick="closeAdminAuth()">Back</button>
+      <button class="btn btn-primary" onclick="handleAdminLogin()">Open Dashboard</button>
+    </div>
+  </div>
+</div>
+
 <div id="appScreen" class="screen">
   <div class="topbar">
     <div class="topbar-brand">Forti<em>Focus</em></div>
@@ -213,13 +289,6 @@
       <h2>✦ AI <em>Chat</em></h2>
       <p>Your personal study assistant — powered by SEMAJ</p>
     </div>
-    <div id="apiNotice" class="key-notice show">
-      ⚠ No API key configured. Paste your Anthropic API key below to enable AI responses.
-    </div>
-    <div class="key-row">
-      <input type="password" class="key-input" id="apiKeyInput" placeholder="Paste your Anthropic API key here (sk-ant-...)">
-      <button class="btn btn-primary btn-sm" onclick="saveKey()">Save Key</button>
-    </div>
     <div class="chat-wrap">
       <div class="chat-head">
         <div class="bot-orb">🧠</div>
@@ -264,6 +333,10 @@ function applyTheme(dark){
   if(ai) ai.textContent = icon;
   if(al) al.textContent = label;
 }
+  document.addEventListener("contextmenu", function(e) {
+  e.preventDefault();
+});
+
 function toggleTheme(){
   isDark = !isDark;
   localStorage.setItem('ff_theme', isDark ? 'dark' : 'light');
@@ -281,7 +354,8 @@ const DB = {
 let users = DB.get('users', {});
 let sessions = DB.get('sessions', {});
 let currentUser = DB.get('currentUser', null);
-let apiKey = DB.get('apiKey', '');
+const ADMIN_CREDS = { username:'admin', password:'admin123' };
+const ADMIN_SESSION_KEY = 'ff_admin_authenticated';
 
 /* ─── AUTH ─── */
 function switchTab(t) {
@@ -291,6 +365,30 @@ function switchTab(t) {
 }
 function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');}
 function clearErr(id){document.getElementById(id).classList.remove('show');}
+function openAdminAuth(){
+  clearErr('adminError');
+  document.getElementById('adminAuthScreen').classList.add('active');
+  document.getElementById('adminUser').focus();
+}
+function closeAdminAuth(){
+  document.getElementById('adminAuthScreen').classList.remove('active');
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPass').value='';
+  clearErr('adminError');
+}
+function handleAdminLogin(){
+  clearErr('adminError');
+  const u=document.getElementById('adminUser').value.trim();
+  const p=document.getElementById('adminPass').value;
+  if(!u||!p){showErr('adminError','Please fill all fields.');return;}
+  if(u!==ADMIN_CREDS.username||p!==ADMIN_CREDS.password){
+    showErr('adminError','Invalid admin credentials.');
+    document.getElementById('adminPass').value='';
+    return;
+  }
+  sessionStorage.setItem(ADMIN_SESSION_KEY,'true');
+  window.location.href='admin.html';
+}
 
 function handleLogin(){
   clearErr('loginError');
@@ -521,51 +619,46 @@ function calcBest(){
 }
 
 /* ─── CHAT ─── */
-let chatHist=[];
-function saveKey(){
-  const k=document.getElementById('apiKeyInput').value.trim();
-  if(!k){showToast('Please enter an API key','danger');return;}
-  apiKey=k; DB.set('apiKey',k);
-  document.getElementById('apiNotice').classList.remove('show');
-  showToast('API key saved ✓','success');
-}
-async function sendChat(){
+function sendChat(){
   const inp=document.getElementById('chatInput');
   const txt=inp.value.trim();
   if(!txt)return;
   inp.value=''; inp.style.height='';
   addMsg('user',txt);
-  chatHist.push({role:'user',content:txt});
   const typing=addTyping();
-  const key=DB.get('apiKey','');
-  if(!key){
+  setTimeout(()=>{
     removeEl(typing);
-    addMsg('bot','⚠️ No API key configured. Paste your Anthropic API key above and click Save Key.');
-    return;
-  }
-  try{
-    const sys=`You are Fortify AI, a warm and encouraging study assistant inside FortiFocus. User: "${currentUser}". Stats: ${getStats()}. Help with study strategies, motivation, time management. Be concise and friendly.`;
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:chatHist.slice(-10)})
-    });
-    const data=await res.json();
-    removeEl(typing);
-    if(data.error){addMsg('bot','⚠️ API Error: '+data.error.message);return;}
-    const reply=data.content?.[0]?.text||'Sorry, no response generated.';
-    chatHist.push({role:'assistant',content:reply});
-    addMsg('bot',reply);
-  }catch(e){
-    removeEl(typing);
-    addMsg('bot','⚠️ Connection error. Please check your API key.');
-  }
+    addMsg('bot',buildChatReply(txt));
+  },450);
 }
 function getStats(){
-  if(!currentUser)return'none';
+  if(!currentUser)return{sessions:0,completed:0,streak:0,focus:0};
   const s=sessions[currentUser]||[];
   const done=s.filter(x=>x.status==='completed');
-  return`Sessions: ${s.length}, Completed: ${done.length}, Streak: ${calcStreak()} days, Focus: ${done.reduce((a,x)=>a+x.duration,0)}min`;
+  return{sessions:s.length,completed:done.length,streak:calcStreak(),focus:done.reduce((a,x)=>a+x.duration,0)};
+}
+function buildChatReply(text){
+  const msg=text.toLowerCase();
+  const stats=getStats();
+  if(msg.includes('streak')||msg.includes('progress')||msg.includes('stats')){
+    return `You're making progress. So far you have ${stats.sessions} total sessions, ${stats.completed} completed sessions, a ${stats.streak}-day streak, and ${stats.focus} focused minutes. Keep your next study block small and clear so it's easy to continue.`;
+  }
+  if(msg.includes('schedule')||msg.includes('plan')||msg.includes('routine')){
+    return 'Try a simple study plan: 1. Pick one subject. 2. Study for 25 minutes. 3. Rest for 5 minutes. 4. Repeat 3 times, then take a longer break. Keep your hardest task in the first block.';
+  }
+  if(msg.includes('motivat')||msg.includes('tired')||msg.includes('burnout')||msg.includes('lazy')){
+    return 'Start smaller than you think. Tell yourself you only need to work for 5 minutes. Once you begin, momentum usually follows. If you are drained, switch to review, flashcards, or note-cleanup instead of forcing heavy work.';
+  }
+  if(msg.includes('exam')||msg.includes('test')||msg.includes('quiz')){
+    return 'For exam prep, focus on active recall: close your notes, answer from memory, then check mistakes. Spend most of your time on weak areas, and end with a short timed practice round.';
+  }
+  if(msg.includes('math')||msg.includes('problem')||msg.includes('solve')){
+    return 'For problem-solving subjects, use this loop: read the example, cover it, solve a similar problem on your own, then explain each step out loud. If you get stuck, go back one step instead of restarting everything.';
+  }
+  if(msg.includes('memor')||msg.includes('remember')||msg.includes('flashcard')){
+    return 'To remember better, break the topic into small chunks, quiz yourself without looking, and review the same material again later today and tomorrow. Retrieval beats rereading.';
+  }
+  return 'I can help with study plans, motivation, focus, exam prep, and habit building. Tell me what subject you are studying or what part feels hard right now, and I will give you a simple next step.';
 }
 function addMsg(role,text){
   const c=document.getElementById('chatMsgs');
@@ -601,7 +694,6 @@ document.getElementById('ringFg').style.strokeDasharray=circ;
 document.getElementById('ringFg').style.strokeDashoffset=0;
 setRing(1);
 
-if(apiKey){document.getElementById('apiKeyInput').value=apiKey;document.getElementById('apiNotice').classList.remove('show');}
 if(currentUser&&users[currentUser]){
   loginAs(currentUser);
 }
