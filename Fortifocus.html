@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FortiFocus – Smart Study Tracker</title>
+<link rel="stylesheet" href="style.css">
+<style>
+
+</style>
+
+</head>
+<body>
+
+<!-- ── AUTH ── -->
+<div id="authScreen" class="screen active">
+  <button class="auth-theme-btn" onclick="toggleTheme()" id="authThemeBtn">
+    <span id="authThemeIcon">🌙</span> <span id="authThemeLabel">Dark</span>
+  </button>
+  <div class="brand-lockup">
+    <h1>Forti<em>Focus</em></h1>
+    <p class="tagline">Smart Study Tracking</p>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
+      <div class="auth-tab" onclick="switchTab('register')">Register</div>
+    </div>
+    <!-- Login -->
+    <div id="loginForm" class="auth-form active">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Your username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')handleLogin()">
+      </div>
+      <div class="error-msg" id="loginError"></div>
+      <button class="btn btn-primary" onclick="handleLogin()">Sign In →</button>
+    </div>
+    <!-- Register -->
+    <div id="registerForm" class="auth-form">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="regUser" placeholder="Choose a username">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@email.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Create a password (6+ chars)">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="regPass2" placeholder="Repeat password">
+      </div>
+      <div class="error-msg" id="registerError"></div>
+      <button class="btn btn-primary" onclick="handleRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="appScreen" class="screen">
+  <div class="topbar">
+    <div class="topbar-brand">Forti<em>Focus</em></div>
+    <div class="topbar-user">
+      <div class="user-chip">Signed in as <strong id="topUser">—</strong></div>
+      <div class="theme-toggle-wrap">
+        <span class="theme-icon" id="topThemeIcon">🌙</span>
+        <button class="theme-toggle" onclick="toggleTheme()" id="topThemeToggle" title="Toggle dark/light mode"></button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <div class="nav-tab active"  onclick="goPage('dashboard')">Dashboard</div>
+    <div class="nav-tab"         onclick="goPage('timer')">Focus Timer</div>
+    <div class="nav-tab"         onclick="goPage('history')">History</div>
+    <div class="nav-tab"         onclick="goPage('streaks')">Streaks</div>
+    <div class="nav-tab"         onclick="goPage('chat')">✦ AI Chat</div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardPage" class="page active">
+    <div class="page-header">
+      <h2>Good to see you <em id="dashGreeting"></em></h2>
+      <p>Here's your productivity at a glance</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card stat-streak">
+        <div class="s-label"><span class="s-icon">🔥</span>Current Streak</div>
+        <div class="s-value" id="statStreak">0</div>
+        <div class="s-sub">consecutive days</div>
+      </div>
+      <div class="stat-card stat-total">
+        <div class="s-label"><span class="s-icon">📚</span>Total Sessions</div>
+        <div class="s-value" id="statTotal">0</div>
+        <div class="s-sub">all time</div>
+      </div>
+      <div class="stat-card stat-time">
+        <div class="s-label"><span class="s-icon">⏱</span>Focus Time</div>
+        <div class="s-value" id="statTime">0</div>
+        <div class="s-sub">minutes focused</div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="s-label"><span class="s-icon">✓</span>Success Rate</div>
+        <div class="s-value" id="statRate">0%</div>
+        <div class="s-sub" id="statRateSub">no sessions yet</div>
+        <div class="progress-bar"><div class="progress-fill" id="rateFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="section-heading">Recent Sessions</div>
+    <div id="recentList" class="history-list"></div>
+  </div>
+
+  <!-- TIMER -->
+  <div id="timerPage" class="page">
+    <div class="page-header">
+      <h2>Focus <em>Timer</em></h2>
+      <p>Set your session and start focusing</p>
+    </div>
+    <div class="timer-layout">
+      <div class="timer-card">
+        <div class="timer-label">⏱ Session Timer</div>
+        <div class="ring-wrap">
+          <svg width="190" height="190" viewBox="0 0 190 190">
+            <circle class="ring-bg" cx="95" cy="95" r="85"/>
+            <circle class="ring-fg" id="ringFg" cx="95" cy="95" r="85"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-time" id="ringTime">25:00</div>
+            <div class="ring-phase" id="ringPhase">ready</div>
+          </div>
+        </div>
+        <div class="dur-row" id="durRow">
+          <button class="dur-btn" onclick="pickDur(15,this)">15m</button>
+          <button class="dur-btn active" onclick="pickDur(25,this)">25m</button>
+          <button class="dur-btn" onclick="pickDur(30,this)">30m</button>
+          <button class="dur-btn" onclick="pickDur(45,this)">45m</button>
+          <button class="dur-btn" onclick="pickDur(60,this)">60m</button>
+        </div>
+        <div class="timer-btns">
+          <button class="btn btn-primary" id="startBtn" onclick="startTimer()">▶ Start</button>
+          <button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopTimer()">⏹ Stop</button>
+        </div>
+      </div>
+      <div class="session-panel">
+        <div class="panel-label">📝 Session Details</div>
+        <div class="form-group">
+          <label>Subject / Task</label>
+          <input class="subject-field" type="text" id="sessSubject" placeholder="e.g. Math Chapter 3, Python review…">
+        </div>
+        <div>
+          <div class="panel-label" style="margin-bottom:.5rem">Status</div>
+          <div class="pill pill-idle" id="sessStatus"><span class="dot"></span> IDLE</div>
+        </div>
+        <div class="divider"></div>
+        <div class="panel-label">Completed today</div>
+        <div class="today-big" id="todayCount">0</div>
+        <div style="font-size:.75rem;color:var(--ink-4);margin-top:.2rem">sessions finished</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="historyPage" class="page">
+    <div class="page-header">
+      <h2>Session <em>History</em></h2>
+      <p>Every study session you've logged</p>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </div>
+
+  <!-- STREAKS -->
+  <div id="streaksPage" class="page">
+    <div class="page-header">
+      <h2>Streak <em>Tracker</em></h2>
+      <p>Stay consistent, build momentum</p>
+    </div>
+    <div class="stats-grid" style="max-width:640px;margin-bottom:2rem">
+      <div class="stat-card stat-streak">
+        <div class="s-label">🔥 Current Streak</div>
+        <div class="s-value" id="strkCur">0</div>
+        <div class="s-sub">days</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-label">🏆 Best Streak</div>
+        <div class="s-value" id="strkBest">0</div>
+        <div class="s-sub">days</div>
+      </div>
+      <div class="stat-card stat-time">
+        <div class="s-label">📅 Active Days</div>
+        <div class="s-value" id="strkActive">0</div>
+        <div class="s-sub">days studied</div>
+      </div>
+    </div>
+    <div class="section-heading">Last 60 Days</div>
+    <div class="streak-grid" id="streakGrid"></div>
+    <div class="streak-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:rgba(90,122,92,.5);border:1px solid var(--sage)"></div>Studied</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--paper-2);border:1px solid var(--border)"></div>No session</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--paper-2);border:2px solid var(--amber)"></div>Today</div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chatPage" class="page">
+    <div class="page-header">
+      <h2>✦ AI <em>Chat</em></h2>
+      <p>Your personal study assistant — powered by SEMAJ</p>
+    </div>
+    <div id="apiNotice" class="key-notice show">
+      ⚠ No API key configured. Paste your Anthropic API key below to enable AI responses.
+    </div>
+    <div class="key-row">
+      <input type="password" class="key-input" id="apiKeyInput" placeholder="Paste your Anthropic API key here (sk-ant-...)">
+      <button class="btn btn-primary btn-sm" onclick="saveKey()">Save Key</button>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <div class="bot-orb">🧠</div>
+        <div>
+          <div class="bot-name-text">SEMAJ AI</div>
+          <div class="bot-online">● online</div>
+        </div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg bot">
+          <div class="msg-av">🧠</div>
+          <div class="msg-bub">
+            Hi there! I'm <strong>SEMAJ AI</strong>, your personal study assistant. 👋<br><br>
+            I can help with study strategies, time management, subject questions, and keeping you motivated. What's on your mind?
+          </div>
+        </div>
+      </div>
+      <div class="chat-foot">
+        <textarea class="chat-input" id="chatInput" rows="1"
+          placeholder="Ask me anything about studying…"
+          onkeydown="chatKey(event)"
+          oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /appScreen -->
+
+<script>
+/* ─── THEME ─── */
+let isDark = DB_theme_get();
+function DB_theme_get(){ return localStorage.getItem('ff_theme')==='dark'; }
+function applyTheme(dark){
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const icon = dark ? '☀️' : '🌙';
+  const label = dark ? 'Light' : 'Dark';
+  const ti = document.getElementById('topThemeIcon');
+  const ai = document.getElementById('authThemeIcon');
+  const al = document.getElementById('authThemeLabel');
+  if(ti) ti.textContent = icon;
+  if(ai) ai.textContent = icon;
+  if(al) al.textContent = label;
+}
+function toggleTheme(){
+  isDark = !isDark;
+  localStorage.setItem('ff_theme', isDark ? 'dark' : 'light');
+  applyTheme(isDark);
+}
+applyTheme(isDark);
+
+/* ─── DATA ─── */
+const DB = {
+  get(k,d=null){ const v=localStorage.getItem('ff_'+k); return v?JSON.parse(v):d; },
+  set(k,v){ localStorage.setItem('ff_'+k,JSON.stringify(v)); },
+  del(k){ localStorage.removeItem('ff_'+k); }
+};
+
+let users = DB.get('users', {});
+let sessions = DB.get('sessions', {});
+let currentUser = DB.get('currentUser', null);
+let apiKey = DB.get('apiKey', '');
+
+/* ─── AUTH ─── */
+function switchTab(t) {
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',i===(t==='login'?0:1)));
+  document.getElementById('loginForm').classList.toggle('active', t==='login');
+  document.getElementById('registerForm').classList.toggle('active', t==='register');
+}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');}
+function clearErr(id){document.getElementById(id).classList.remove('show');}
+
+function handleLogin(){
+  clearErr('loginError');
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(!u||!p){showErr('loginError','Please fill all fields.');return;}
+  if(!users[u]){showErr('loginError','User not found.');return;}
+  if(users[u].pass!==btoa(p)){showErr('loginError','Incorrect password.');return;}
+  loginAs(u);
+}
+function handleRegister(){
+  clearErr('registerError');
+  const u=document.getElementById('regUser').value.trim();
+  const e=document.getElementById('regEmail').value.trim();
+  const p=document.getElementById('regPass').value;
+  const p2=document.getElementById('regPass2').value;
+  if(!u||!e||!p||!p2){showErr('registerError','Please fill all fields.');return;}
+  if(p!==p2){showErr('registerError','Passwords do not match.');return;}
+  if(p.length<6){showErr('registerError','Password must be 6+ characters.');return;}
+  if(users[u]){showErr('registerError','Username already taken.');return;}
+  users[u]={email:e,pass:btoa(p),joined:new Date().toISOString()};
+  sessions[u]=[];
+  DB.set('users',users);DB.set('sessions',sessions);
+  loginAs(u);
+}
+function loginAs(u){
+  currentUser=u; DB.set('currentUser',u);
+  if(!sessions[u])sessions[u]=[];
+  document.getElementById('authScreen').classList.remove('active');
+  document.getElementById('appScreen').classList.add('active');
+  document.getElementById('topUser').textContent=u;
+  document.getElementById('dashGreeting').textContent=u;
+  renderAll();
+  goPage('dashboard');
+}
+function handleLogout(){
+  currentUser=null; DB.del('currentUser');
+  clearTimer();
+  document.getElementById('authScreen').classList.add('active');
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  goPage('dashboard');
+}
+
+/* ─── NAV ─── */
+function goPage(name){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pages=['dashboard','timer','history','streaks','chat'];
+  document.querySelectorAll('.nav-tab')[pages.indexOf(name)]?.classList.add('active');
+  document.getElementById(name+'Page').classList.add('active');
+  if(name==='dashboard')renderDash();
+  if(name==='history')renderHistory();
+  if(name==='streaks')renderStreaks();
+  if(name==='timer')renderTodayCount();
+}
+
+/* ─── TIMER ─── */
+let tInterval=null, tSec=0, tTotal=0, tRunning=false, tDur=25;
+
+function pickDur(m,el){
+  if(tRunning)return;
+  tDur=m; tSec=m*60; tTotal=m*60;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  updateDisplay(); setRing(1);
+}
+function startTimer(){
+  if(tRunning)return;
+  tRunning=true; tSec=tDur*60; tTotal=tSec;
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('stopBtn').style.display='';
+  document.getElementById('durRow').style.opacity='.45';
+  document.getElementById('ringPhase').textContent='focusing';
+  setStatusPill('running');
+  tInterval=setInterval(()=>{
+    tSec--;
+    updateDisplay();
+    setRing(tSec/tTotal);
+    if(tSec<=0) completeTimer();
+  },1000);
+}
+function stopTimer(){
+  clearInterval(tInterval); tRunning=false;
+  const elapsed=Math.max(1,Math.floor((tTotal-tSec)/60));
+  logSess(elapsed,'interrupted');
+  resetTimerUI();
+  showToast('Session interrupted. Keep at it! 💪','danger');
+}
+function completeTimer(){
+  clearInterval(tInterval); tRunning=false;
+  logSess(tDur,'completed');
+  resetTimerUI();
+  showToast('Session complete! Great work! 🎉','success');
+}
+function clearTimer(){
+  clearInterval(tInterval); tRunning=false;
+  tSec=tDur*60; tTotal=tSec; resetTimerUI();
+}
+function resetTimerUI(){
+  tSec=tDur*60; tTotal=tSec;
+  document.getElementById('startBtn').style.display='';
+  document.getElementById('stopBtn').style.display='none';
+  document.getElementById('durRow').style.opacity='1';
+  document.getElementById('ringPhase').textContent='ready';
+  setStatusPill('idle');
+  updateDisplay(); setRing(1); renderTodayCount();
+}
+function updateDisplay(){
+  const m=Math.floor(tSec/60).toString().padStart(2,'0');
+  const s=(tSec%60).toString().padStart(2,'0');
+  document.getElementById('ringTime').textContent=`${m}:${s}`;
+}
+function setRing(frac){
+  const c=2*Math.PI*85;
+  document.getElementById('ringFg').style.strokeDashoffset=c*(1-frac);
+}
+function setStatusPill(s){
+  const el=document.getElementById('sessStatus');
+  const map={running:'pill-running',idle:'pill-idle',completed:'pill-completed',interrupted:'pill-interrupted'};
+  const labels={running:'RUNNING',idle:'IDLE',completed:'COMPLETED',interrupted:'INTERRUPTED'};
+  el.className='pill '+map[s];
+  el.innerHTML=`<span class="dot"></span> ${labels[s]}`;
+}
+function renderTodayCount(){
+  const today=new Date().toDateString();
+  const n=(sessions[currentUser]||[]).filter(x=>new Date(x.date).toDateString()===today&&x.status==='completed').length;
+  document.getElementById('todayCount').textContent=n;
+}
+
+/* ─── LOG ─── */
+function logSess(dur,status){
+  const sub=document.getElementById('sessSubject').value.trim()||'Untitled Session';
+  const s={id:Date.now(),subject:sub,duration:dur,status,date:new Date().toISOString(),planned:tDur};
+  if(!sessions[currentUser])sessions[currentUser]=[];
+  sessions[currentUser].unshift(s);
+  DB.set('sessions',sessions);
+}
+
+/* ─── RENDER ─── */
+function renderAll(){ renderDash(); renderStreaks(); }
+
+function renderDash(){
+  if(!currentUser)return;
+  const s=sessions[currentUser]||[];
+  const done=s.filter(x=>x.status==='completed');
+  const mins=done.reduce((a,x)=>a+x.duration,0);
+  const rate=s.length?Math.round(done.length/s.length*100):0;
+  const streak=calcStreak();
+  document.getElementById('statStreak').textContent=streak;
+  document.getElementById('statTotal').textContent=s.length;
+  document.getElementById('statTime').textContent=mins;
+  document.getElementById('statRate').textContent=rate+'%';
+  document.getElementById('statRateSub').textContent=`${done.length} of ${s.length} sessions`;
+  document.getElementById('rateFill').style.width=rate+'%';
+  document.getElementById('dashGreeting').textContent=currentUser;
+  const el=document.getElementById('recentList');
+  const rec=s.slice(0,5);
+  el.innerHTML=rec.length?rec.map(sessHTML).join(''):`<div class="empty-state"><div class="empty-icon">📂</div><p>No sessions yet — start your first focus timer!</p></div>`;
+}
+
+function renderHistory(){
+  if(!currentUser)return;
+  const s=sessions[currentUser]||[];
+  const el=document.getElementById('historyList');
+  el.innerHTML=s.length?s.map(sessHTML).join(''):`<div class="empty-state"><div class="empty-icon">📂</div><p>No sessions recorded yet.</p></div>`;
+}
+
+function sessHTML(x){
+  const d=new Date(x.date);
+  const dt=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const tm=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const pillClass=x.status==='completed'?'pill-completed':x.status==='interrupted'?'pill-interrupted':'pill-idle';
+  return`<div class="history-item">
+    <div>
+      <div class="h-subject">${x.subject}</div>
+      <div class="h-meta">${dt} · ${tm}</div>
+    </div>
+    <div class="h-right">
+      <div class="h-dur">${x.duration}m</div>
+      <div class="pill ${pillClass}"><span class="dot"></span>${x.status.toUpperCase()}</div>
+    </div>
+  </div>`;
+}
+
+function renderStreaks(){
+  if(!currentUser)return;
+  const s=sessions[currentUser]||[];
+  const cur=calcStreak(), best=calcBest();
+  const active=new Set(s.filter(x=>x.status==='completed').map(x=>new Date(x.date).toDateString())).size;
+  document.getElementById('strkCur').textContent=cur;
+  document.getElementById('strkBest').textContent=best;
+  document.getElementById('strkActive').textContent=active;
+  const studyDays=new Set(s.filter(x=>x.status==='completed').map(x=>new Date(x.date).toDateString()));
+  const today=new Date();
+  const grid=document.getElementById('streakGrid');
+  const days=[]; for(let i=59;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);days.push(d);}
+  grid.innerHTML=days.map(d=>{
+    const ds=d.toDateString();
+    const isToday=ds===today.toDateString();
+    const has=studyDays.has(ds);
+    return`<div class="s-day${has?' studied strong':''}${isToday?' today':''}" title="${ds}"></div>`;
+  }).join('');
+}
+
+function calcStreak(){
+  const s=sessions[currentUser]||[];
+  const days=new Set(s.filter(x=>x.status==='completed').map(x=>new Date(x.date).toDateString()));
+  let n=0;
+  for(let i=0;i<365;i++){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    if(days.has(d.toDateString()))n++;
+    else if(i>0)break;
+  }
+  return n;
+}
+function calcBest(){
+  const s=sessions[currentUser]||[];
+  const days=[...new Set(s.filter(x=>x.status==='completed').map(x=>new Date(x.date).toDateString()))]
+    .map(d=>new Date(d)).sort((a,b)=>a-b);
+  let best=0,cur=0,prev=null;
+  for(const d of days){
+    if(prev){const diff=(d-prev)/86400000; cur=diff===1?cur+1:1;}else cur=1;
+    if(cur>best)best=cur; prev=d;
+  }
+  return best;
+}
+
+/* ─── CHAT ─── */
+let chatHist=[];
+function saveKey(){
+  const k=document.getElementById('apiKeyInput').value.trim();
+  if(!k){showToast('Please enter an API key','danger');return;}
+  apiKey=k; DB.set('apiKey',k);
+  document.getElementById('apiNotice').classList.remove('show');
+  showToast('API key saved ✓','success');
+}
+async function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  inp.value=''; inp.style.height='';
+  addMsg('user',txt);
+  chatHist.push({role:'user',content:txt});
+  const typing=addTyping();
+  const key=DB.get('apiKey','');
+  if(!key){
+    removeEl(typing);
+    addMsg('bot','⚠️ No API key configured. Paste your Anthropic API key above and click Save Key.');
+    return;
+  }
+  try{
+    const sys=`You are Fortify AI, a warm and encouraging study assistant inside FortiFocus. User: "${currentUser}". Stats: ${getStats()}. Help with study strategies, motivation, time management. Be concise and friendly.`;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:chatHist.slice(-10)})
+    });
+    const data=await res.json();
+    removeEl(typing);
+    if(data.error){addMsg('bot','⚠️ API Error: '+data.error.message);return;}
+    const reply=data.content?.[0]?.text||'Sorry, no response generated.';
+    chatHist.push({role:'assistant',content:reply});
+    addMsg('bot',reply);
+  }catch(e){
+    removeEl(typing);
+    addMsg('bot','⚠️ Connection error. Please check your API key.');
+  }
+}
+function getStats(){
+  if(!currentUser)return'none';
+  const s=sessions[currentUser]||[];
+  const done=s.filter(x=>x.status==='completed');
+  return`Sessions: ${s.length}, Completed: ${done.length}, Streak: ${calcStreak()} days, Focus: ${done.reduce((a,x)=>a+x.duration,0)}min`;
+}
+function addMsg(role,text){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  const html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  d.innerHTML=`<div class="msg-av">${role==='user'?'👤':'🧠'}</div><div class="msg-bub">${html}</div>`;
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function addTyping(){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className='msg bot'; d.id='typing';
+  d.innerHTML=`<div class="msg-av">🧠</div><div class="msg-bub"><div class="typing-wrap"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+  c.appendChild(d); c.scrollTop=c.scrollHeight; return d;
+}
+function removeEl(el){el?.parentNode?.removeChild(el);}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function autoResize(t){t.style.height='';t.style.height=Math.min(t.scrollHeight,100)+'px';}
+
+/* ─── TOAST ─── */
+function showToast(msg,type='success'){
+  const t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='.3s';setTimeout(()=>t.remove(),300);},2800);
+}
+
+/* ─── INIT ─── */
+updateDisplay(); setRing(1);
+const circ=2*Math.PI*85;
+document.getElementById('ringFg').style.strokeDasharray=circ;
+document.getElementById('ringFg').style.strokeDashoffset=0;
+setRing(1);
+
+if(apiKey){document.getElementById('apiKeyInput').value=apiKey;document.getElementById('apiNotice').classList.remove('show');}
+if(currentUser&&users[currentUser]){
+  loginAs(currentUser);
+}
+</script>
+</body>
+</html>

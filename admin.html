@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FortiFocus — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070e;
+  --surface:#0f0f1a;
+  --surface2:#161625;
+  --surface3:#1e1e30;
+  --border:#252538;
+  --accent:#7c3aed;
+  --accent2:#06b6d4;
+  --accent3:#f59e0b;
+  --success:#10b981;
+  --danger:#ef4444;
+  --text:#e8e8f4;
+  --text-muted:#5f5f80;
+  --text-dim:#9090b8;
+  --glow:rgba(124,58,237,0.25);
+  --glow-r:rgba(239,68,68,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 70% 40% at 15% 5%,rgba(124,58,237,0.07) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 30% at 85% 90%,rgba(6,182,212,0.05) 0%,transparent 50%);
+  pointer-events:none;z-index:0;}
+
+/* ─── LOGIN ─── */
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2rem;z-index:100;background:var(--bg);}
+#loginScreen.hidden{display:none;}
+.admin-brand{text-align:center;}
+.admin-brand h1{font-size:2.6rem;font-weight:800;letter-spacing:-2px;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.admin-brand .sub{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:.3rem;}
+.admin-brand .sub span{color:#ef4444;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 0 60px var(--glow-r);}
+.login-card h2{font-size:1.1rem;font-weight:800;margin-bottom:1.5rem;color:var(--text-dim);}
+.fg{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+.fg label{font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;}
+.fg input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;color:var(--text);font-family:'Syne',sans-serif;font-size:.9rem;outline:none;transition:.2s;}
+.fg input:focus{border-color:#ef4444;box-shadow:0 0 0 3px var(--glow-r);}
+.btn{padding:.8rem 1.5rem;border-radius:8px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;transition:.2s;letter-spacing:.5px;}
+.btn-red{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;width:100%;box-shadow:0 4px 20px var(--glow-r);}
+.btn-red:hover{transform:translateY(-1px);box-shadow:0 6px 30px var(--glow-r);}
+.btn-sm{padding:.4rem .9rem;font-size:.78rem;border-radius:6px;}
+.btn-danger-sm{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);}
+.btn-danger-sm:hover{background:rgba(239,68,68,0.25);}
+.btn-view{background:rgba(124,58,237,0.15);color:var(--accent);border:1px solid rgba(124,58,237,0.3);}
+.btn-view:hover{background:rgba(124,58,237,0.25);}
+.err{color:#ef4444;font-size:.78rem;font-family:'Space Mono',monospace;margin-top:.5rem;display:none;}
+.err.show{display:block;}
+
+/* ─── LAYOUT ─── */
+#adminApp{display:none;flex-direction:column;min-height:100vh;position:relative;z-index:1;}
+#adminApp.active{display:flex;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:1rem;}
+.topbar-brand{font-size:1.3rem;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.admin-pill{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:.65rem;font-weight:800;font-family:'Space Mono',monospace;letter-spacing:2px;padding:.25rem .6rem;border-radius:20px;}
+.topbar-right{display:flex;align-items:center;gap:1rem;}
+.refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:.45rem .9rem;cursor:pointer;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;transition:.2s;}
+.refresh-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;padding:.45rem .9rem;cursor:pointer;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;transition:.2s;}
+.logout-btn:hover{border-color:#ef4444;color:#ef4444;}
+.last-refresh{font-size:.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;}
+
+/* ─── MAIN CONTENT ─── */
+.content{padding:2rem;max-width:1300px;margin:0 auto;width:100%;}
+
+/* ─── KPI GRID ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem 1.5rem;position:relative;overflow:hidden;transition:.2s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.k1::before{background:linear-gradient(90deg,#ef4444,#f59e0b);}
+.kpi.k2::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.kpi.k3::before{background:linear-gradient(90deg,var(--success),var(--accent2));}
+.kpi.k4::before{background:linear-gradient(90deg,var(--accent3),#ef4444);}
+.kpi.k5::before{background:linear-gradient(90deg,var(--accent2),var(--success));}
+.kpi-label{font-size:.68rem;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.4rem;}
+.kpi-val{font-size:2rem;font-weight:800;color:var(--text);line-height:1;}
+.kpi-sub{font-size:.72rem;color:var(--text-muted);margin-top:.3rem;font-family:'Space Mono',monospace;}
+
+/* ─── SECTION HEADER ─── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.sec-title{font-size:1.05rem;font-weight:800;color:var(--text);}
+.sec-title span{color:var(--text-muted);font-size:.75rem;font-weight:600;margin-left:.5rem;font-family:'Space Mono',monospace;}
+
+/* ─── SEARCH / FILTER ─── */
+.controls{display:flex;gap:.75rem;margin-bottom:1.2rem;flex-wrap:wrap;}
+.search-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.55rem 1rem;color:var(--text);font-family:'Syne',sans-serif;font-size:.85rem;outline:none;transition:.2s;min-width:220px;}
+.search-box:focus{border-color:var(--accent2);}
+.filter-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.55rem 1rem;color:var(--text-dim);font-family:'Syne',sans-serif;font-size:.82rem;outline:none;cursor:pointer;}
+.filter-select option{background:var(--surface2);}
+
+/* ─── USER TABLE ─── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:2.5rem;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--surface2);border-bottom:1px solid var(--border);}
+thead th{padding:.85rem 1.2rem;text-align:left;font-size:.68rem;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:.9rem 1.2rem;font-size:.88rem;vertical-align:middle;}
+.avatar-cell{display:flex;align-items:center;gap:.75rem;}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;}
+.user-name{font-weight:700;color:var(--text);}
+.user-email{font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;}
+.mono{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text-dim);}
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .65rem;border-radius:20px;font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;white-space:nowrap;}
+.badge-green{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);}
+.badge-red{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);}
+.badge-purple{background:rgba(124,58,237,0.15);color:var(--accent);border:1px solid rgba(124,58,237,0.3);}
+.badge-amber{background:rgba(245,158,11,0.15);color:var(--accent3);border:1px solid rgba(245,158,11,0.3);}
+.badge-cyan{background:rgba(6,182,212,0.15);color:var(--accent2);border:1px solid rgba(6,182,212,0.3);}
+.streak-fire{color:var(--accent3);}
+.actions{display:flex;gap:.5rem;}
+.empty-row td{text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem;}
+
+/* ─── USER MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,.5);}
+.modal-header{padding:1.5rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{font-size:1.05rem;font-weight:800;}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.modal-close:hover{border-color:#ef4444;color:#ef4444;}
+.modal-body{padding:1.75rem;overflow-y:auto;}
+.modal-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+.ms{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;}
+.ms .ml{font-size:.65rem;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.3rem;}
+.ms .mv{font-size:1.5rem;font-weight:800;}
+.ms .mv.amber{color:var(--accent3);}
+.ms .mv.green{color:var(--success);}
+.ms .mv.cyan{color:var(--accent2);}
+.modal-sec{font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.75rem;}
+.sess-list{display:flex;flex-direction:column;gap:.5rem;max-height:280px;overflow-y:auto;}
+.sess-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap.5rem;}
+.sess-item .si-left .si-sub{font-weight:700;font-size:.88rem;}
+.sess-item .si-left .si-date{font-size:.7rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:.15rem;}
+.sess-item .si-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+.sess-empty{text-align:center;padding:2rem;color:var(--text-muted);font-size:.82rem;}
+
+/* ─── CONFIRM MODAL ─── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.confirm-overlay.open{display:flex;}
+.confirm-box{background:var(--surface);border:1px solid rgba(239,68,68,0.4);border-radius:14px;width:100%;max-width:380px;padding:2rem;text-align:center;box-shadow:0 0 40px var(--glow-r);}
+.confirm-icon{font-size:2.5rem;margin-bottom:.75rem;}
+.confirm-box h3{font-size:1.1rem;font-weight:800;margin-bottom:.5rem;}
+.confirm-box p{color:var(--text-muted);font-size:.85rem;margin-bottom:1.5rem;}
+.confirm-actions{display:flex;gap:.75rem;justify-content:center;}
+.btn-cancel{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:.7rem 1.5rem;border-radius:8px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;transition:.2s;}
+.btn-cancel:hover{border-color:var(--border);color:var(--text);}
+.btn-confirm-del{background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:#fff;padding:.7rem 1.5rem;border-radius:8px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;box-shadow:0 4px 16px var(--glow-r);}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.4rem;font-size:.82rem;z-index:9999;animation:toastIn .3s ease;box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:'Space Mono',monospace;}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.toast.ok{border-color:rgba(16,185,129,0.5);color:var(--success);}
+.toast.err{border-color:rgba(239,68,68,0.5);color:#ef4444;}
+
+/* ─── SESSION LOG TABLE ─── */
+.log-filters{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ ADMIN LOGIN ══════════════════════════ -->
+<div id="loginScreen">
+  <div class="admin-brand">
+    <h1>FortiFocus</h1>
+    <div class="sub"><span>ADMIN</span> CONTROL PANEL</div>
+  </div>
+  <div class="login-card">
+    <h2>🔐 Administrator Login</h2>
+    <div class="fg">
+      <label>Admin Username</label>
+      <input type="text" id="adminUser" placeholder="admin">
+    </div>
+    <div class="fg">
+      <label>Admin Password</label>
+      <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div class="err" id="loginErr">Invalid credentials.</div>
+    <br>
+    <button class="btn btn-red" onclick="adminLogin()">Access Dashboard →</button>
+    <div style="margin-top:1rem;font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:center;">
+      Default: admin / admin123 &nbsp;·&nbsp; Same browser as FortiFocus
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ ADMIN APP ══════════════════════════ -->
+<div id="adminApp">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand">FortiFocus</div>
+      <div class="admin-pill">ADMIN</div>
+    </div>
+    <div class="topbar-right">
+      <div class="last-refresh" id="lastRefresh">—</div>
+      <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+      <button class="logout-btn" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi k1">
+        <div class="kpi-label">👥 Total Users</div>
+        <div class="kpi-val" id="kpiUsers">0</div>
+        <div class="kpi-sub">registered accounts</div>
+      </div>
+      <div class="kpi k2">
+        <div class="kpi-label">📚 Total Sessions</div>
+        <div class="kpi-val" id="kpiSessions">0</div>
+        <div class="kpi-sub">all time</div>
+      </div>
+      <div class="kpi k3">
+        <div class="kpi-label">✅ Completed</div>
+        <div class="kpi-val" id="kpiCompleted">0</div>
+        <div class="kpi-sub" id="kpiRate">—</div>
+      </div>
+      <div class="kpi k4">
+        <div class="kpi-label">⏱ Total Focus</div>
+        <div class="kpi-val" id="kpiFocus">0</div>
+        <div class="kpi-sub">minutes</div>
+      </div>
+      <div class="kpi k5">
+        <div class="kpi-label">📅 Active Today</div>
+        <div class="kpi-val" id="kpiToday">0</div>
+        <div class="kpi-sub">users with sessions today</div>
+      </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="sec-header">
+      <div class="sec-title">Registered Users <span id="userCount"></span></div>
+    </div>
+    <div class="controls">
+      <input class="search-box" type="text" id="searchInput" placeholder="🔍  Search by username or email…" oninput="renderTable()">
+      <select class="filter-select" id="sortSelect" onchange="renderTable()">
+        <option value="newest">Sort: Newest First</option>
+        <option value="oldest">Sort: Oldest First</option>
+        <option value="sessions_desc">Sort: Most Sessions</option>
+        <option value="streak_desc">Sort: Highest Streak</option>
+        <option value="alpha">Sort: A → Z</option>
+      </select>
+      <select class="filter-select" id="filterActive" onchange="renderTable()">
+        <option value="all">All Users</option>
+        <option value="active">Active Today</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Registered</th>
+            <th>Sessions</th>
+            <th>Focus Time</th>
+            <th>Streak 🔥</th>
+            <th>Success %</th>
+            <th>Last Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- All Sessions Log -->
+    <div class="sec-header">
+      <div class="sec-title">All Sessions Log <span id="sessionCount"></span></div>
+    </div>
+    <div class="log-filters">
+      <input class="search-box" type="text" id="sessSearch" placeholder="🔍  Search by user or subject…" oninput="renderSessionLog()">
+      <select class="filter-select" id="sessStatusFilter" onchange="renderSessionLog()">
+        <option value="all">All Statuses</option>
+        <option value="completed">Completed</option>
+        <option value="interrupted">Interrupted</option>
+      </select>
+      <select class="filter-select" id="sessUserFilter" onchange="renderSessionLog()" id="sessUserFilter">
+        <option value="all">All Users</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Subject</th>
+            <th>Date & Time</th>
+            <th>Planned</th>
+            <th>Actual</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="sessionLogBody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /adminApp -->
+
+<!-- ══════════════════════════ USER DETAIL MODAL ══════════════════════════ -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="avatar" id="modalAvatar" style="width:40px;height:40px;font-size:1rem;"></div>
+        <div>
+          <h3 id="modalName">—</h3>
+          <div style="font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;" id="modalEmail">—</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-stats" id="modalStats"></div>
+      <div class="modal-sec">Session History</div>
+      <div class="sess-list" id="modalSessions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ CONFIRM DELETE ══════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h3>Delete User?</h3>
+    <p id="confirmMsg">This will permanently remove the user and all their session data.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-del" onclick="confirmDelete()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  ADMIN CREDENTIALS
+// ══════════════════════════════════════════════════
+const ADMIN_CREDS = { username: 'admin', password: 'admin123' };
+let adminLoggedIn = false;
+let pendingDeleteUser = null;
+
+// ══════════════════════════════════════════════════
+//  DATA — reads from FortiFocus localStorage keys
+// ══════════════════════════════════════════════════
+function getUsers()    { try{ return JSON.parse(localStorage.getItem('ff_users'))||{}; }catch(e){return{};} }
+function getSessions() { try{ return JSON.parse(localStorage.getItem('ff_sessions'))||{}; }catch(e){return{};} }
+function saveUsers(u)  { localStorage.setItem('ff_users', JSON.stringify(u)); }
+function saveSess(s)   { localStorage.setItem('ff_sessions', JSON.stringify(s)); }
+
+let allUsers = {};
+let allSessions = {};
+
+function loadData(){
+  allUsers    = getUsers();
+  allSessions = getSessions();
+  renderKPIs();
+  renderTable();
+  renderSessionLog();
+  populateUserFilter();
+  document.getElementById('lastRefresh').textContent = 'Refreshed ' + new Date().toLocaleTimeString();
+}
+
+// ══════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════
+function adminLogin(){
+  const u = document.getElementById('adminUser').value.trim();
+  const p = document.getElementById('adminPass').value;
+  const err = document.getElementById('loginErr');
+  if(u===ADMIN_CREDS.username && p===ADMIN_CREDS.password){
+    err.classList.remove('show');
+    adminLoggedIn = true;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminApp').classList.add('active');
+    loadData();
+  } else {
+    err.classList.add('show');
+    document.getElementById('adminPass').value='';
+  }
+}
+function adminLogout(){
+  adminLoggedIn=false;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('adminApp').classList.remove('active');
+  document.getElementById('adminPass').value='';
+}
+
+// ══════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════
+function userSessions(u){ return (allSessions[u]||[]); }
+function completedSessions(u){ return userSessions(u).filter(s=>s.status==='completed'); }
+function focusMinutes(u){ return completedSessions(u).reduce((a,s)=>a+s.duration,0); }
+function successRate(u){
+  const t=userSessions(u).length;
+  return t?Math.round(completedSessions(u).length/t*100):0;
+}
+function calcStreak(u){
+  const s=userSessions(u);
+  const days=new Set(s.filter(x=>x.status==='completed').map(x=>new Date(x.date).toDateString()));
+  let streak=0, d=new Date();
+  for(let i=0;i<365;i++){
+    const ds=new Date(d);ds.setDate(d.getDate()-i);
+    if(days.has(ds.toDateString()))streak++;
+    else if(i>0)break;
+  }
+  return streak;
+}
+function lastActive(u){
+  const s=userSessions(u);
+  if(!s.length)return null;
+  return new Date(Math.max(...s.map(x=>new Date(x.date))));
+}
+function isActiveToday(u){
+  const la=lastActive(u);
+  return la&&la.toDateString()===new Date().toDateString();
+}
+function avatarColor(name){
+  const cols=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
+  let h=0;for(const c of name)h+=c.charCodeAt(0);
+  return cols[h%cols.length];
+}
+function initials(name){return name.slice(0,2).toUpperCase();}
+function fmtDate(d){
+  if(!d)return'—';
+  const dt=new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtDateTime(d){
+  const dt=new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════════════
+//  KPI RENDER
+// ══════════════════════════════════════════════════
+function renderKPIs(){
+  const users = Object.keys(allUsers);
+  let totalSess=0, totalComp=0, totalFocus=0, activeToday=0;
+  for(const u of users){
+    const s=userSessions(u);
+    totalSess+=s.length;
+    totalComp+=completedSessions(u).length;
+    totalFocus+=focusMinutes(u);
+    if(isActiveToday(u))activeToday++;
+  }
+  document.getElementById('kpiUsers').textContent=users.length;
+  document.getElementById('kpiSessions').textContent=totalSess;
+  document.getElementById('kpiCompleted').textContent=totalComp;
+  document.getElementById('kpiRate').textContent=totalSess?Math.round(totalComp/totalSess*100)+'% success rate':'no sessions yet';
+  document.getElementById('kpiFocus').textContent=totalFocus;
+  document.getElementById('kpiToday').textContent=activeToday;
+}
+
+// ══════════════════════════════════════════════════
+//  USER TABLE
+// ══════════════════════════════════════════════════
+function renderTable(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sort=document.getElementById('sortSelect').value;
+  const filter=document.getElementById('filterActive').value;
+
+  let users=Object.entries(allUsers).map(([u,d])=>({username:u,...d}));
+
+  // filter
+  if(filter==='active') users=users.filter(u=>isActiveToday(u.username));
+  if(filter==='inactive') users=users.filter(u=>!isActiveToday(u.username));
+
+  // search
+  if(q) users=users.filter(u=>u.username.toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+
+  // sort
+  if(sort==='newest') users.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(sort==='oldest') users.sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  if(sort==='sessions_desc') users.sort((a,b)=>userSessions(b.username).length-userSessions(a.username).length);
+  if(sort==='streak_desc') users.sort((a,b)=>calcStreak(b.username)-calcStreak(a.username));
+  if(sort==='alpha') users.sort((a,b)=>a.username.localeCompare(b.username));
+
+  document.getElementById('userCount').textContent='('+users.length+')';
+  const tbody=document.getElementById('userTableBody');
+
+  if(!users.length){
+    tbody.innerHTML=`<tr class="empty-row"><td colspan="9">No users found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=users.map(u=>{
+    const streak=calcStreak(u.username);
+    const rate=successRate(u.username);
+    const fm=focusMinutes(u.username);
+    const la=lastActive(u.username);
+    const active=isActiveToday(u.username);
+    const totalS=userSessions(u.username).length;
+    const col=avatarColor(u.username);
+    return`<tr>
+      <td>
+        <div class="avatar-cell">
+          <div class="avatar" style="background:${col}">${initials(u.username)}</div>
+          <div>
+            <div class="user-name">${u.username}</div>
+            ${active?'<div style="font-size:.65rem;color:var(--success);font-family:Space Mono,monospace;">● active today</div>':''}
+          </div>
+        </div>
+      </td>
+      <td><span class="mono">${u.email||'—'}</span></td>
+      <td><span class="mono">${fmtDate(u.createdAt)}</span></td>
+      <td><span class="badge badge-purple">${totalS}</span></td>
+      <td><span class="mono">${fm}m</span></td>
+      <td><span class="${streak>0?'badge badge-amber':'mono'}">${streak>0?'🔥 '+streak:streak}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span class="mono">${rate}%</span>
+          <div style="width:50px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+            <div style="width:${rate}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;"></div>
+          </div>
+        </div>
+      </td>
+      <td><span class="mono">${la?fmtDate(la):'Never'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-sm btn-view" onclick="openUserModal('${u.username}')">View</button>
+          <button class="btn btn-sm btn-danger-sm" onclick="askDelete('${u.username}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  SESSION LOG
+// ══════════════════════════════════════════════════
+function populateUserFilter(){
+  const sel=document.getElementById('sessUserFilter');
+  const current=sel.value;
+  sel.innerHTML='<option value="all">All Users</option>';
+  for(const u of Object.keys(allUsers)){
+    const opt=document.createElement('option');
+    opt.value=u;opt.textContent=u;
+    sel.appendChild(opt);
+  }
+  sel.value=current;
+}
+
+function renderSessionLog(){
+  const q=document.getElementById('sessSearch').value.toLowerCase();
+  const statusF=document.getElementById('sessStatusFilter').value;
+  const userF=document.getElementById('sessUserFilter').value;
+
+  let rows=[];
+  for(const [u,sessList] of Object.entries(allSessions)){
+    for(const s of sessList){
+      rows.push({...s,username:u});
+    }
+  }
+
+  // filters
+  if(userF!=='all') rows=rows.filter(r=>r.username===userF);
+  if(statusF!=='all') rows=rows.filter(r=>r.status===statusF);
+  if(q) rows=rows.filter(r=>r.username.toLowerCase().includes(q)||(r.subject||'').toLowerCase().includes(q));
+
+  // sort newest first
+  rows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  document.getElementById('sessionCount').textContent='('+rows.length+')';
+  const tbody=document.getElementById('sessionLogBody');
+
+  if(!rows.length){
+    tbody.innerHTML=`<tr class="empty-row"><td colspan="6">No sessions found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=rows.map(r=>{
+    const col=avatarColor(r.username);
+    const isComp=r.status==='completed';
+    return`<tr>
+      <td>
+        <div class="avatar-cell">
+          <div class="avatar" style="background:${col};width:26px;height:26px;font-size:.65rem;">${initials(r.username)}</div>
+          <span style="font-weight:700;font-size:.85rem;">${r.username}</span>
+        </div>
+      </td>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.subject||'Untitled'}</td>
+      <td><span class="mono">${fmtDateTime(r.date)}</span></td>
+      <td><span class="mono">${r.planned||'—'}m</span></td>
+      <td><span class="mono">${r.duration}m</span></td>
+      <td><span class="badge ${isComp?'badge-green':'badge-red'}">${isComp?'✓ completed':'✗ interrupted'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  USER DETAIL MODAL
+// ══════════════════════════════════════════════════
+function openUserModal(username){
+  const u=allUsers[username];
+  if(!u)return;
+  const col=avatarColor(username);
+  const av=document.getElementById('modalAvatar');
+  av.textContent=initials(username);av.style.background=col;
+  document.getElementById('modalName').textContent=username;
+  document.getElementById('modalEmail').textContent=u.email||'No email';
+
+  const s=userSessions(username);
+  const comp=completedSessions(username);
+  const streak=calcStreak(username);
+  const rate=successRate(username);
+  const fm=focusMinutes(username);
+  const la=lastActive(username);
+
+  document.getElementById('modalStats').innerHTML=`
+    <div class="ms"><div class="ml">Sessions</div><div class="mv">${s.length}</div></div>
+    <div class="ms"><div class="ml">Completed</div><div class="mv green">${comp.length}</div></div>
+    <div class="ms"><div class="ml">Streak 🔥</div><div class="mv amber">${streak}</div></div>
+    <div class="ms"><div class="ml">Focus Time</div><div class="mv cyan">${fm}m</div></div>
+    <div class="ms"><div class="ml">Success %</div><div class="mv">${rate}%</div></div>
+    <div class="ms"><div class="ml">Joined</div><div class="mv" style="font-size:.9rem;">${fmtDate(u.createdAt)}</div></div>
+  `;
+
+  const sessEl=document.getElementById('modalSessions');
+  if(!s.length){
+    sessEl.innerHTML='<div class="sess-empty">No sessions recorded yet.</div>';
+  } else {
+    const sorted=[...s].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    sessEl.innerHTML=sorted.map(x=>`
+      <div class="sess-item">
+        <div class="si-left">
+          <div class="si-sub">${x.subject||'Untitled'}</div>
+          <div class="si-date">${fmtDateTime(x.date)}</div>
+        </div>
+        <div class="si-right">
+          <span class="mono" style="font-size:.75rem;">${x.duration}m</span>
+          <span class="badge ${x.status==='completed'?'badge-green':'badge-red'}">${x.status}</span>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('userModal').classList.add('open');
+}
+function closeModal(){ document.getElementById('userModal').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════
+//  DELETE USER
+// ══════════════════════════════════════════════════
+function askDelete(username){
+  pendingDeleteUser=username;
+  document.getElementById('confirmMsg').textContent=`Delete "${username}" and all their session data? This cannot be undone.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); pendingDeleteUser=null; }
+function confirmDelete(){
+  if(!pendingDeleteUser)return;
+  const u=getUsers();
+  const s=getSessions();
+  delete u[pendingDeleteUser];
+  delete s[pendingDeleteUser];
+  saveUsers(u); saveSess(s);
+  allUsers=u; allSessions=s;
+  closeConfirm();
+  closeModal();
+  renderKPIs(); renderTable(); renderSessionLog(); populateUserFilter();
+  showToast(`User "${pendingDeleteUser}" deleted.`,'err');
+  pendingDeleteUser=null;
+}
+
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+function showToast(msg, type='ok'){
+  const t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},2800);
+}
+
+// ══════════════════════════════════════════════════
+//  CLOSE MODAL ON BACKDROP
+// ══════════════════════════════════════════════════
+document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('confirmOverlay').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+
+// Enter key on admin login
+document.getElementById('adminUser').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin();});
+</script>
+</body>
+</html>
