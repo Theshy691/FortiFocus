@@ -105,6 +105,46 @@ body::before {
   align-items:center;
   gap:.9rem;
 }
+.theme-toggle-wrap {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  color:var(--ink-4);
+  font-size:.75rem;
+  user-select:none;
+}
+.theme-icon {
+  font-size:.95rem;
+  line-height:1;
+}
+.theme-toggle {
+  width:38px;
+  height:22px;
+  border-radius:11px;
+  background:var(--border-2);
+  border:none;
+  cursor:pointer;
+  position:relative;
+  flex-shrink:0;
+}
+.theme-toggle::after {
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"] .theme-toggle {
+  background:var(--sage);
+}
+[data-theme="dark"] .theme-toggle::after {
+  transform:translateX(16px);
+}
 .topbar-brand {
   font-family:'Fraunces', serif;
   font-size:1.35rem;
@@ -644,6 +684,10 @@ tbody td {
       <div class="admin-pill">Admin</div>
     </div>
     <div class="topbar-right">
+      <div class="theme-toggle-wrap">
+        <span class="theme-icon" id="themeIcon">🌙</span>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode"></button>
+      </div>
       <div class="last-refresh" id="lastRefresh">-</div>
       <button class="refresh-btn" onclick="loadData()">Refresh</button>
       <button class="logout-btn" onclick="adminLogout()">Logout</button>
@@ -787,6 +831,14 @@ let pendingDeleteUser = null;
 function applyTheme() {
   const dark = localStorage.getItem('ff_theme') === 'dark';
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.textContent = dark ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  const dark = localStorage.getItem('ff_theme') === 'dark';
+  localStorage.setItem('ff_theme', dark ? 'light' : 'dark');
+  applyTheme();
 }
 
 document.addEventListener("contextmenu", function(e) {
