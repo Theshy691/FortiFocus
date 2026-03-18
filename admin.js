@@ -87,7 +87,7 @@ function applyTheme() {
   const dark = localStorage.getItem('ff_theme') === 'dark';
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   const icon = document.getElementById('themeIcon');
-  if (icon) icon.textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  if (icon) icon.textContent = dark ? 'LT' : 'DK';
 }
 
 function toggleTheme() {

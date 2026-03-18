@@ -135,7 +135,7 @@ let tDur = 25;
 
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  const icon = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  const icon = dark ? 'LT' : 'DK';
   const label = dark ? 'Light' : 'Dark';
   const ti = document.getElementById('topThemeIcon');
   const ai = document.getElementById('authThemeIcon');
@@ -426,7 +426,7 @@ function renderDash() {
   const rec = sessions.slice(0, 5);
   el.innerHTML = rec.length
     ? rec.map(sessHTML).join('')
-    : `<div class="empty-state"><div class="empty-icon">\uD83D\uDCC2</div><p>No sessions yet - start your first focus timer!</p></div>`;
+    : `<div class="empty-state"><div class="empty-icon">LOG</div><p>No sessions yet - start your first focus timer!</p></div>`;
 }
 
 function renderHistory() {
@@ -434,7 +434,7 @@ function renderHistory() {
   const el = document.getElementById('historyList');
   el.innerHTML = sessions.length
     ? sessions.map(sessHTML).join('')
-    : `<div class="empty-state"><div class="empty-icon">\uD83D\uDCC2</div><p>No sessions recorded yet.</p></div>`;
+    : `<div class="empty-state"><div class="empty-icon">LOG</div><p>No sessions recorded yet.</p></div>`;
 }
 
 function sessHTML(x) {
@@ -445,7 +445,7 @@ function sessHTML(x) {
   return `<div class="history-item">
     <div>
       <div class="h-subject">${x.subject}</div>
-      <div class="h-meta">${dt} \u00B7 ${tm}</div>
+      <div class="h-meta">${dt} | ${tm}</div>
     </div>
     <div class="h-right">
       <div class="h-dur">${x.duration}m</div>
@@ -564,7 +564,7 @@ function addMsg(role, text) {
   const d = document.createElement('div');
   d.className = `msg ${role}`;
   const html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-  d.innerHTML = `<div class="msg-av">${role === 'user' ? '\uD83D\uDC64' : '\uD83E\uDDE0'}</div><div class="msg-bub">${html}</div>`;
+  d.innerHTML = `<div class="msg-av">${role === 'user' ? 'ME' : 'AI'}</div><div class="msg-bub">${html}</div>`;
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
 }
@@ -574,7 +574,7 @@ function addTyping() {
   const d = document.createElement('div');
   d.className = 'msg bot';
   d.id = 'typing';
-  d.innerHTML = `<div class="msg-av">\uD83E\uDDE0</div><div class="msg-bub"><div class="typing-wrap"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+  d.innerHTML = `<div class="msg-av">AI</div><div class="msg-bub"><div class="typing-wrap"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
   return d;
