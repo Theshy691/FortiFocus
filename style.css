@@ -309,40 +309,69 @@ body::before {
   border-radius: var(--radius-lg);
   padding: 1.4rem 1.5rem;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s;
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+  position: relative;
+  overflow: hidden;
 }
-.stat-card:hover { box-shadow: var(--shadow); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--paper-3), transparent);
+}
+.stat-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: var(--border-2);
+}
 .stat-card .s-label {
-  font-size: .7rem;
-  font-weight: 600;
-  color: var(--ink-4);
-  letter-spacing: 1.2px;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--ink-3);
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-bottom: .65rem;
+  margin-bottom: .8rem;
   display: flex;
   align-items: center;
-  gap: .4rem;
+  gap: .55rem;
 }
 .stat-card .s-icon {
-  width: 22px; height: 22px;
-  border-radius: 6px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 .45rem;
+  border-radius: 999px;
   display: flex; align-items: center; justify-content: center;
-  font-size: .75rem;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--ink-2);
+  border: 1px solid rgba(28,25,23,.08);
 }
 .stat-card .s-value {
   font-family: 'Fraunces', serif;
-  font-size: 2.4rem;
+  font-size: 2.55rem;
   font-weight: 400;
   line-height: 1;
   color: var(--ink);
+  letter-spacing: -1px;
 }
-.stat-card .s-sub { font-size: .75rem; color: var(--ink-4); margin-top: .3rem; }
+.stat-card .s-sub {
+  font-size: .76rem;
+  color: var(--ink-4);
+  margin-top: .42rem;
+}
 
 .stat-streak .s-value { color: var(--amber); }
+.stat-streak::before { background: linear-gradient(90deg, var(--amber), transparent); }
 .stat-streak .s-icon { background: var(--amber-light); }
+.stat-total::before { background: linear-gradient(90deg, var(--sky), transparent); }
 .stat-total .s-icon { background: var(--sky-light); }
+.stat-time::before { background: linear-gradient(90deg, var(--sage), transparent); }
 .stat-time .s-icon { background: var(--sage-light); }
 .stat-success .s-value { color: var(--sage); }
+.stat-success::before { background: linear-gradient(90deg, var(--sage-mid), transparent); }
 .stat-success .s-icon { background: var(--sage-light); }
 
 .progress-bar { height: 5px; background: var(--paper-3); border-radius: 3px; overflow: hidden; margin-top: .6rem; }

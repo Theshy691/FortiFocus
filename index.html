@@ -1,16 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FortiFocus â€“ Smart Study Tracker</title>
+<title>FortiFocus &ndash; Smart Study Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="authScreen" class="screen active">
   <button class="auth-theme-btn" onclick="toggleTheme()" id="authThemeBtn">
-    <span id="authThemeIcon">ðŸŒ™</span> <span id="authThemeLabel">Dark</span>
+    <span id="authThemeIcon">&#127769;</span> <span id="authThemeLabel">Dark</span>
   </button>
   <div class="brand-lockup">
     <h1>Forti<em>Focus</em></h1>
@@ -85,20 +86,20 @@
   <div class="topbar">
     <div class="topbar-brand">Forti<em>Focus</em></div>
     <div class="topbar-user">
-      <div class="user-chip">Signed in as <strong id="topUser">â€”</strong></div>
+      <div class="user-chip">Signed in as <strong id="topUser">&mdash;</strong></div>
       <div class="theme-toggle-wrap">
-        <span class="theme-icon" id="topThemeIcon">ðŸŒ™</span>
+        <span class="theme-icon" id="topThemeIcon">&#127769;</span>
         <button class="theme-toggle" onclick="toggleTheme()" id="topThemeToggle" title="Toggle dark/light mode"></button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</button>
     </div>
   </div>
   <div class="nav-bar">
-    <div class="nav-tab active"  onclick="goPage('dashboard')">Dashboard</div>
-    <div class="nav-tab"         onclick="goPage('timer')">Focus Timer</div>
-    <div class="nav-tab"         onclick="goPage('history')">History</div>
-    <div class="nav-tab"         onclick="goPage('streaks')">Streaks</div>
-    <div class="nav-tab"         onclick="goPage('chat')">âœ¦ AI Chat</div>
+    <div class="nav-tab active" onclick="goPage('dashboard')">Dashboard</div>
+    <div class="nav-tab" onclick="goPage('timer')">Focus Timer</div>
+    <div class="nav-tab" onclick="goPage('history')">History</div>
+    <div class="nav-tab" onclick="goPage('streaks')">Streaks</div>
+    <div class="nav-tab" onclick="goPage('chat')">&#10022; AI Chat</div>
   </div>
 
   <div id="dashboardPage" class="page active">
@@ -108,22 +109,22 @@
     </div>
     <div class="stats-grid">
       <div class="stat-card stat-streak">
-        <div class="s-label"><span class="s-icon">ðŸ”¥</span>Current Streak</div>
+        <div class="s-label"><span class="s-icon">ST</span>Current Streak</div>
         <div class="s-value" id="statStreak">0</div>
         <div class="s-sub">consecutive days</div>
       </div>
       <div class="stat-card stat-total">
-        <div class="s-label"><span class="s-icon">ðŸ“š</span>Total Sessions</div>
+        <div class="s-label"><span class="s-icon">SS</span>Total Sessions</div>
         <div class="s-value" id="statTotal">0</div>
         <div class="s-sub">all time</div>
       </div>
       <div class="stat-card stat-time">
-        <div class="s-label"><span class="s-icon">â±</span>Focus Time</div>
+        <div class="s-label"><span class="s-icon">FT</span>Focus Time</div>
         <div class="s-value" id="statTime">0</div>
         <div class="s-sub">minutes focused</div>
       </div>
       <div class="stat-card stat-success">
-        <div class="s-label"><span class="s-icon">âœ“</span>Success Rate</div>
+        <div class="s-label"><span class="s-icon">OK</span>Success Rate</div>
         <div class="s-value" id="statRate">0%</div>
         <div class="s-sub" id="statRateSub">no sessions yet</div>
         <div class="progress-bar"><div class="progress-fill" id="rateFill" style="width:0%"></div></div>
@@ -140,7 +141,7 @@
     </div>
     <div class="timer-layout">
       <div class="timer-card">
-        <div class="timer-label">â± Session Timer</div>
+        <div class="timer-label">&#9201; Session Timer</div>
         <div class="ring-wrap">
           <svg width="190" height="190" viewBox="0 0 190 190">
             <circle class="ring-bg" cx="95" cy="95" r="85"/>
@@ -159,15 +160,15 @@
           <button class="dur-btn" onclick="pickDur(60,this)">60m</button>
         </div>
         <div class="timer-btns">
-          <button class="btn btn-primary" id="startBtn" onclick="startTimer()">â–¶ Start</button>
-          <button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopTimer()">â¹ Stop</button>
+          <button class="btn btn-primary" id="startBtn" onclick="startTimer()">&#9654; Start</button>
+          <button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopTimer()">&#9209; Stop</button>
         </div>
       </div>
       <div class="session-panel">
-        <div class="panel-label">ðŸ“ Session Details</div>
+        <div class="panel-label">&#128221; Session Details</div>
         <div class="form-group">
           <label>Subject / Task</label>
-          <input class="subject-field" type="text" id="sessSubject" placeholder="e.g. Math Chapter 3, Python reviewâ€¦">
+          <input class="subject-field" type="text" id="sessSubject" placeholder="e.g. Math Chapter 3, Python review...">
         </div>
         <div>
           <div class="panel-label" style="margin-bottom:.5rem">Status</div>
@@ -196,17 +197,17 @@
     </div>
     <div class="stats-grid" style="max-width:640px;margin-bottom:2rem">
       <div class="stat-card stat-streak">
-        <div class="s-label">ðŸ”¥ Current Streak</div>
+        <div class="s-label">&#128293; Current Streak</div>
         <div class="s-value" id="strkCur">0</div>
         <div class="s-sub">days</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">ðŸ† Best Streak</div>
+        <div class="s-label">&#127942; Best Streak</div>
         <div class="s-value" id="strkBest">0</div>
         <div class="s-sub">days</div>
       </div>
       <div class="stat-card stat-time">
-        <div class="s-label">ðŸ“… Active Days</div>
+        <div class="s-label">&#128197; Active Days</div>
         <div class="s-value" id="strkActive">0</div>
         <div class="s-sub">days studied</div>
       </div>
@@ -222,32 +223,32 @@
 
   <div id="chatPage" class="page">
     <div class="page-header">
-      <h2>âœ¦ AI <em>Chat</em></h2>
-      <p>Your personal study assistant â€” powered by SEMAJ</p>
+      <h2>&#10022; AI <em>Chat</em></h2>
+      <p>Your personal study assistant &mdash; powered by SEMAJ</p>
     </div>
     <div class="chat-wrap">
       <div class="chat-head">
-        <div class="bot-orb">ðŸ§ </div>
+        <div class="bot-orb">&#129504;</div>
         <div>
           <div class="bot-name-text">SEMAJ AI</div>
-          <div class="bot-online">â— online</div>
+          <div class="bot-online">&#9679; online</div>
         </div>
       </div>
       <div class="chat-msgs" id="chatMsgs">
         <div class="msg bot">
-          <div class="msg-av">ðŸ§ </div>
+          <div class="msg-av">&#129504;</div>
           <div class="msg-bub">
-            Hi there! I'm <strong>SEMAJ AI</strong>, your personal study assistant. ðŸ‘‹<br><br>
+            Hi there! I'm <strong>SEMAJ AI</strong>, your personal study assistant. &#128075;<br><br>
             I can help with study strategies, time management, subject questions, and keeping you motivated. What's on your mind?
           </div>
         </div>
       </div>
       <div class="chat-foot">
         <textarea class="chat-input" id="chatInput" rows="1"
-          placeholder="Ask me anything about studyingâ€¦"
+          placeholder="Ask me anything about studying..."
           onkeydown="chatKey(event)"
           oninput="autoResize(this)"></textarea>
-        <button class="send-btn" onclick="sendChat()">âž¤</button>
+        <button class="send-btn" onclick="sendChat()">&#10148;</button>
       </div>
     </div>
   </div>
